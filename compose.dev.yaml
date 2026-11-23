@@ -1,0 +1,25 @@
+services:
+
+  app:
+    build:
+      target: development
+
+    volumes:
+      - .:/var/www/html
+      - crm_vendor:/var/www/html/vendor
+
+    networks:
+      - crm_network
+      - central_db_network
+
+  nginx:
+    volumes:
+      - .:/var/www/html:ro
+
+networks:
+  central_db_network:
+    external: true
+    name: central_db_network
+
+volumes:
+  crm_vendor:
