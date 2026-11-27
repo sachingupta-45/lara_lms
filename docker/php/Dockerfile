@@ -41,7 +41,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Copy Composer dependency files
 COPY composer.json composer.lock ./
 
-# Install production dependencies
+# Install production dependencies without running scripts
 RUN composer install \
     --no-dev \
     --no-interaction \
@@ -52,8 +52,18 @@ RUN composer install \
 # Copy Laravel application
 COPY . .
 
-# Set Laravel writable directories
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Generate optimized autoload files and discover Laravel packages
+RUN composer dump-autoload --no-dev --optimize
+
+# Create and configure Laravel writable directories
+RUN mkdir -p \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 # Enable production PHP configuration
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
